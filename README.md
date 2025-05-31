@@ -20,7 +20,7 @@ WD-BossMenu is a comprehensive job management system for FiveM servers using the
 
 ## Demo
 
-[Watch Demo Video](https://cdn.discordapp.com/attachments/1377513657738596503/1378242035362037852/2025-05-31_08-16-11.mp4?ex=683be36b&is=683a91eb&hm=3825f5eb8bac824defc8dfe98e2bb5bd7ab5de0e10ea23878594bf4d47f06072&)
+[Watch Demo Video]( https://cdn.discordapp.com/attachments/1377513657738596503/1378242035362037852/2025-05-31_08-16-11.mp4?ex=683be36b&is=683a91eb&hm=3825f5eb8bac824defc8dfe98e2bb5bd7ab5de0e10ea23878594bf4d47f06072& )
 
 ## Dependencies
 
