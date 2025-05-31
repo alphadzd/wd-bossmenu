@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المدير</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Cairo:wght@400;600;700&family=Amiri:wght@400;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    
+    <!-- Audio elements for sound effects -->
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+</head>
+
+<body>
+    <div class="application-container" id="application-container" style="display: none;">
+        <!-- Header section -->
+        <div class="application-header">
+            <div class="police-emblem"></div>
+            <h2 class="application-title">طلب الانضمام للشرطة</h2>
+            <p class="application-subtitle">انضم إلى فريقنا في الشرطة</p>
+        </div>
+    
+        <!-- Progress bar -->
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+    
+        <!-- Form content -->
+        <div class="application-content">
+            <div class="intro-text">
+                <p>شكراً لاهتمامك بالانضمام إلى الشرطة. يرجى إكمال جميع الحقول في هذا الطلب بعناية.</p>
+                <p>الحقول المطلوبة مميزة بـ <span class="required-label"></span></p>
+            </div>
+    
+            <div class="application-question" id="application-question">
+                لماذا تريد الانضمام إلى قسم الشرطة؟<span class="application-question-required" id="application-question-required"></span>
+            </div>
+    
+            <textarea class="application-input" id="application-input_text" placeholder="اكتب إجابتك هنا..."></textarea>
+            <input type="number" id="application-input_number">
+            <select id="application-input_select">
+                <option>اختر</option>
+            </select>
+
+            <div class="badge-watermark"></div>
+        </div>
+    
+        <!-- Buttons section -->
+        <div class="application-buttons">
+            <button class="btn-cancel" id="cancel_app">إلغاء</button>
+            <button class="btn-next" id="finish_task">إنهاء</button>
+        </div>
+    </div>
+    <div id="container" class="container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-logo">قم</div>
+            <a class="nav-item active" data-page="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>لوحة التحكم</span>
+            </a>
+            <a class="nav-item" data-page="employees">
+                <i class="fas fa-users"></i>
+                <span>الموظفين</span>
+            </a>
+            <a class="nav-item" data-page="society">
+                <i class="fas fa-coins"></i>
+                <span>المجتمع</span>
+            </a>
+            <a class="nav-item" data-page="permissions">
+                <i class="fas fa-key"></i>
+                <span>الصلاحيات</span>
+            </a>
+            <a class="nav-item" data-page="settings">
+                <i class="fas fa-cog"></i>
+                <span>الإعدادات</span>
+            </a>
+            <a class="nav-item" style="margin-top: auto;" id="close-ui">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>إغلاق</span>
+            </a>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content">
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboard-page">
+                <header>
+                    <div class="header-title">
+                        <h1 id="department-title">لوحة التحكم</h1>
+                        <p id="employees-count">إدارة 0 موظفين</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" id="refresh-data-btn">
+                            <i class="fas fa-sync-alt"></i> تحديث البيانات
+                        </button>
+                    </div>
+                </header>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-title">إجمالي الموظفين</div>
+                        <div class="stat-card-value" id="total-employees">0</div>
+                        <div class="stat-card-trend">
+                            <i class="fas fa-users"></i> <span id="status-online">0</span> متصل حالياً
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">متوسط ساعات العمل</div>
+                        <div class="stat-card-value" id="avg-hours">0</div>
+                        <div class="stat-card-trend">
+                            <i class="fas fa-clock"></i> ساعة لكل موظف أسبوعياً
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">أعلى رتبة</div>
+                        <div class="stat-card-value" id="highest-grade">-</div>
+                        <div class="stat-card-trend">
+                            <i class="fas fa-star"></i> <span id="highest-grade-count">0</span> موظف في هذه الرتبة
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">الرتبة الأكثر شيوعاً</div>
+                        <div class="stat-card-value" id="common-grade">-</div>
+                        <div class="stat-card-trend">
+                            <i class="fas fa-user-friends"></i> <span id="common-grade-count">0</span> موظف في هذه الرتبة
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">نظرة عامة على النشاط - حسب الساعة</div>
+                            <div class="chart-actions">
+                                <div class="chart-action" id="download-activity"><i class="fas fa-download"></i></div>
+                                <div class="chart-action" id="expand-activity"><i class="fas fa-expand"></i></div>
+                            </div>
+                        </div>
+                        <div class="activity-chart" id="activity-chart">
+                            <!-- Generated dynamically by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <div class="chart-title">الموظفون المتصلون</div>
+                            <div class="chart-actions">
+                                <div class="chart-action" id="refresh-online"><i class="fas fa-sync-alt"></i></div>
+                            </div>
+                        </div>
+                        <div class="employee-list" id="online-employees">
+                            <!-- Generated dynamically by JavaScript -->
+                            <div class="empty-list">لا يوجد موظفون متصلون حالياً</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">قائمة الموظفين</div>
+                        <div class="table-actions">
+                            <input type="text" id="search-employee" placeholder="البحث عن موظفين...">
+                        </div>
+                    </div>
+                    <table width="100%">
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>الرتبة</th>
+                                <th>الحالة</th>
+                                <th class="location-column">الموقع</th>
+                                <th class="playtime-column">وقت اللعب</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employees-table">
+                            <!-- Generated dynamically by JavaScript -->
+                            <tr>
+                                <td colspan="6" class="empty-table">جاري تحميل البيانات...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Employees Page -->
+            <div class="page" id="employees-page">
+                <header>
+                    <div class="header-title">
+                        <h1>إدارة الموظفين</h1>
+                        <p id="employees-management-count">إدارة 0 موظفين</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="hire-employee-btn">
+                            <i class="fas fa-user-plus"></i> توظيف موظف جديد
+                        </button>
+                    </div>
+                </header>
+
+                <div class="employee-management">
+                    <div class="tabs">
+                        <div class="tab active" data-filter="all">الكل</div>
+                        <div class="tab" data-filter="online">متصل</div>
+                        <div class="tab" data-filter="offline">غير متصل</div>
+                        <div class="tab" data-filter="management">الإدارة</div>
+                    </div>
+
+                    <input type="text" id="search-management-employee" placeholder="البحث عن موظفين...">
+
+                    <div class="table-container">
+                        <table width="100%">
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>الرتبة</th>
+                                    <th>الحالة</th>
+                                    <th class="playtime-column">وقت اللعب</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="management-employees-table">
+                                <!-- Generated dynamically by JavaScript -->
+                                <tr>
+                                    <td colspan="5" class="empty-table">جاري تحميل البيانات...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="page" id="society-page">
+                <header>
+                    <div class="header-title">
+                        <h1><i class="fas fa-coins"></i> إدارة المجتمع</h1>
+                        <p>إدارة الأموال الخاصة بمؤسستك بأمان وكفاءة</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" id="refresh-society-btn">
+                            <i class="fas fa-sync-alt"></i> تحديث البيانات
+                        </button>
+                    </div>
+                </header>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card society-balance-card">
+                        <div class="stat-card-title">رصيد المجتمع</div>
+                        <div class="stat-card-value" id="society-balance">$0</div>
+                        <div class="stat-card-trend">
+                            <i class="fas fa-wallet"></i> <span id="society-name">جاري التحميل...</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">آخر معاملة</div>
+                        <div class="stat-card-value" id="last-transaction-amount">$0</div>
+                        <div class="stat-card-trend">
+                            <i class="fas fa-clock"></i> <span id="last-transaction-time">لا توجد معاملات حديثة</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">نشاط اليوم</div>
+                        <div class="stat-card-value" id="today-transactions">0</div>
+                        <div class="stat-card-trend">
+                            <i class="fas fa-exchange-alt"></i> <span id="today-transactions-amount">$0</span> إجمالي
+                            الحجم
+                        </div>
+                    </div>
+                </div>
+
+<div class="society-actions-container">
+    <div class="chart-container society-chart-container">
+        <div class="chart-header">
+            <div class="chart-title">نشاط المعاملات</div>
+            <div class="chart-actions">
+                <div class="dropdown">
+                    <button id="timeframe-selector" class="dropdown-btn">
+                        <span>آخر 7 أيام</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="timeframe-dropdown" class="dropdown-content">
+                        <a href="#" data-timeframe="day">اليوم</a>
+                        <a href="#" data-timeframe="week">آخر 7 أيام</a>
+                        <a href="#" data-timeframe="month">آخر 30 يوم</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="transactions-chart" class="transactions-chart"></div>
+    </div>
+
+    <div class="society-actions-row">
+        <div class="society-action-card">
+            <div class="society-card-title">
+                <i class="fas fa-arrow-circle-up"></i> إيداع الأموال
+            </div>
+            <div class="form-group">
+                <label for="deposit-amount">المبلغ المراد إيداعه</label>
+                <input type="number" id="deposit-amount" min="1" placeholder="أدخل المبلغ المراد إيداعه">
+            </div>
+            <button class="btn btn-primary" id="deposit-btn">
+                <i class="fas fa-arrow-circle-up"></i> إيداع الأموال
+            </button>
+        </div>
+
+        <div class="society-action-card">
+            <div class="society-card-title">
+                <i class="fas fa-arrow-circle-down"></i> سحب الأموال
+            </div>
+            <div class="form-group">
+                <label for="withdraw-amount">المبلغ المراد سحبه</label>
+                <input type="number" id="withdraw-amount" min="1" placeholder="أدخل المبلغ المراد سحبه">
+            </div>
+            <button class="btn btn-primary" id="withdraw-btn">
+                <i class="fas fa-arrow-circle-down"></i> سحب الأموال
+            </button>
+        </div>
+
+        <div class="society-action-card">
+            <div class="society-card-title">
+                <i class="fas fa-exchange-alt"></i> تحويل إلى موظف
+            </div>
+            <div class="form-group">
+                <label for="transfer-employee">اختر الموظف</label>
+                <select id="transfer-employee">
+                    <!-- Options will be filled dynamically -->
+                    <option value="">اختر موظفاً</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transfer-amount">المبلغ المراد تحويله</label>
+                <input type="number" id="transfer-amount" min="1" placeholder="أدخل المبلغ المراد تحويله">
+            </div>
+            <button class="btn btn-primary" id="transfer-btn">
+                <i class="fas fa-exchange-alt"></i> تحويل الأموال
+            </button>
+        </div>
+    </div>
+</div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">
+                            <i class="fas fa-history"></i> سجل المعاملات
+                        </div>
+                        <div class="table-actions">
+                            <input type="text" id="search-transaction" placeholder="البحث في المعاملات...">
+                        </div>
+                    </div>
+                    <table width="100%">
+                        <thead>
+                            <tr>
+                                <th>التاريخ والوقت</th>
+                                <th>النوع</th>
+                                <th>المبلغ</th>
+                                <th>الموظف</th>
+                                <th>ملاحظة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-table">
+                            <!-- Generated dynamically by JavaScript -->
+                            <tr>
+                                <td colspan="5" class="empty-table">جاري تحميل سجل المعاملات...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="page" id="permissions-page">
+                <header>
+                    <div class="header-title">
+                        <h1><i class="fas fa-key"></i> صلاحيات الموظفين</h1>
+                        <p>تعيين حقوق وصول محددة للموظفين</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" id="refresh-permissions-btn">
+                            <i class="fas fa-sync-alt"></i> تحديث الصلاحيات
+                        </button>
+                    </div>
+                </header>
+            
+                <div class="permissions-container">
+                    <div class="permissions-selection">
+                        <div class="form-group">
+                            <label for="permissions-employee-select">اختر الموظف</label>
+                            <select id="permissions-employee-select" class="permissions-select">
+                                <option value="">-- اختر موظفاً --</option>
+                                <!-- Employees will be loaded dynamically -->
+                            </select>
+                        </div>
+                    </div>
+            
+                    <div class="permissions-content" id="permissions-content" style="display: none;">
+                        <div class="permissions-card">
+                            <div class="permissions-title">حقوق الوصول</div>
+                            <p class="permissions-description">حدد الميزات التي يمكن لهذا الموظف الوصول إليها</p>
+            
+                            <div class="toggle-container">
+                                <p>الوصول إلى لوحة التحكم</p>
+                                <label class="toggle">
+                                    <input type="checkbox" id="perm-dashboard">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+            
+                            <div class="toggle-container">
+                                <p>إدارة الموظفين</p>
+                                <label class="toggle">
+                                    <input type="checkbox" id="perm-employees">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+            
+                            <div class="toggle-container">
+                                <p>الشؤون المالية للمجتمع</p>
+                                <label class="toggle">
+                                    <input type="checkbox" id="perm-society">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+            
+                            <div class="toggle-container">
+                                <p>مراجعة الطلبات</p>
+                                <label class="toggle">
+                                    <input type="checkbox" id="perm-applications">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+            
+                            <div class="toggle-container">
+                                <p>التوظيف والفصل</p>
+                                <label class="toggle">
+                                    <input type="checkbox" id="perm-hiringfiring">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+            
+                        <div class="save-permissions-container">
+                            <button class="btn btn-primary" id="save-permissions-btn">
+                                <i class="fas fa-save"></i> حفظ الصلاحيات
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Permission Confirmation Modal -->
+            <div class="modal" id="permissions-confirm-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title"><i class="fas fa-key"></i> تأكيد تغييرات الصلاحيات</div>
+                        <div class="modal-close">&times;</div>
+                    </div>
+                    <div class="modal-body">
+                        <p>أنت على وشك تعديل صلاحيات <span id="confirm-permissions-employee" class="employee-name">اسم الموظف</span></p>
+                        <div class="permission-summary" id="permission-summary">
+                            <!-- Summary will be filled dynamically -->
+                        </div>
+                        <div class="warning-box">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>
+                                <strong>ملاحظة:</strong> منح الصلاحيات يسمح لهذا الموظف بالوصول إلى ميزات إدارة الوظائف الحساسة. اختر بعناية.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline modal-close-btn">إلغاء</button>
+                        <button class="btn btn-primary" id="confirm-permissions-btn">
+                            <i class="fas fa-check-circle"></i> تأكيد التغييرات
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="page" id="applications-page">
+                <header>
+                    <div class="header-title">
+                        <h1>طلبات التوظيف</h1>
+                        <p id="applications-count">0 طلبات معلقة</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" id="refresh-applications-btn">
+                            <i class="fas fa-sync-alt"></i> تحديث الطلبات
+                        </button>
+                    </div>
+                </header>
+
+                <div class="applications-container">
+                    <div class="tabs">
+<div class="tab active" data-filter="all">الكل</div>
+<div class="tab" data-filter="pending">قيد الانتظار</div>
+<div class="tab" data-filter="accepted">مقبول</div>
+<div class="tab" data-filter="rejected">مرفوض</div>
+<div class="tab" data-filter="finish">منتهٍ</div>
+                    </div>
+
+                    <input type="text" id="search-application" placeholder="Search applications...">
+
+                    <div class="table-container">
+<table width="100%">
+    <thead>
+        <tr>
+            <th>الاسم</th>
+            <th>تاريخ التقديم</th>
+            <th>الحالة</th>
+            <th>الإجراءات</th>
+        </tr>
+    </thead>
+    <tbody id="applications-table">
+        <!-- يتم إنشاؤه ديناميكيًا بواسطة JavaScript -->
+        <tr>
+            <td colspan="4" class="empty-table">لا توجد طلبات لعرضها</td>
+        </tr>
+    </tbody>
+</table>
+
+                    </div>
+                </div>
+            </div>
+
+
+<!-- Application Details Modal -->
+<div class="modal" id="application-details-modal">
+    <div class="modal-content application-details-content">
+        <div class="modal-header application-header">
+            <div class="modal-title">
+                <i class="fas fa-file-alt"></i> تفاصيل الطلب
+            </div>
+            <div class="modal-close">&times;</div>
+        </div>
+        <div class="modal-body application-body">
+            <div class="applicant-card">
+                <div class="applicant-info">
+                    <div class="applicant-name-container">
+                        <i class="fas fa-user"></i>
+                        <h3 id="applicant-name">جون دو</h3>
+                    </div>
+                    <div class="applicant-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <p id="application-date">تم التقديم في: 12/03/2025</p>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-info-circle"></i>
+                            <p id="application-status" class="status-badge">الحالة: قيد الانتظار</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="section-title">إجابات الطلب</h4>
+            <div class="application-responses" id="application-responses-container">
+                <!-- يتم إنشاؤها ديناميكيًا -->
+            </div>
+
+            <h4 class="section-title">ملاحظات المراجعة</h4>
+            <div class="form-group">
+                <textarea id="application-notes" placeholder="أضف ملاحظات حول هذا الطلب"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer application-footer">
+            <button class="btn btn-danger" id="reject-application-btn">
+                <i class="fas fa-times-circle"></i> رفض
+            </button>
+            <button class="btn btn-outline modal-close-btn">
+                <i class="fas fa-times"></i> إغلاق
+            </button>
+            <button class="btn btn-primary" id="accept-application-btn">
+                <i class="fas fa-check-circle"></i> قبول
+            </button>
+            <button class="btn btn-success" id="finish-application-btn">
+                <i class="fas fa-flag-checkered"></i> إنهاء
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Page -->
+<div class="page" id="settings-page">
+    <header>
+        <div class="header-title">
+            <h1>إعدادات النظام</h1>
+            <p>خصص تجربتك في الإدارة</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" id="reset-settings-btn">
+                <i class="fas fa-undo"></i> إعادة الإعدادات
+            </button>
+            <button class="btn btn-primary" id="save-settings-btn">
+                <i class="fas fa-save"></i> حفظ الإعدادات
+            </button>
+        </div>
+    </header>
+
+    <div class="settings-container">
+        <div class="settings-card">
+            <div class="settings-title">إعدادات المظهر</div>
+
+            <div class="toggle-container">
+                <p>الوضع الداكن</p>
+                <label class="toggle">
+                    <input type="checkbox" id="darkMode" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-container">
+                <p>عرض الحركات</p>
+                <label class="toggle">
+                    <input type="checkbox" id="showAnimations" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-container">
+                <p>عرض مضغوط</p>
+                <label class="toggle">
+                    <input type="checkbox" id="compactView">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="color-picker">
+                <label>لون السمة</label>
+                <div class="color-options">
+                    <div class="color-option color-blue active" data-color="blue"></div>
+                    <div class="color-option color-purple" data-color="purple"></div>
+                    <div class="color-option color-green" data-color="green"></div>
+                    <div class="color-option color-red" data-color="red"></div>
+                    <div class="color-option color-orange" data-color="orange"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-card">
+            <div class="settings-title">إعدادات العرض</div>
+
+            <div class="toggle-container">
+                <p>عرض وقت اللعب</p>
+                <label class="toggle">
+                    <input type="checkbox" id="showPlaytime" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-container">
+                <p>عرض الموقع</p>
+                <label class="toggle">
+                    <input type="checkbox" id="showLocation" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="refreshInterval">فترة التحديث (بالثواني)</label>
+                <input type="number" id="refreshInterval" min="30" max="300" value="60">
+            </div>
+
+            <div class="form-group">
+                <label for="notificationSound">صوت الإشعارات</label>
+                <select id="notificationSound">
+                    <option value="none">بدون</option>
+                    <option value="default" selected>الافتراضي</option>
+                    <option value="alert">تنبيه</option>
+                    <option value="chime">رنين</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="transfer-confirm-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-exchange-alt"></i> تأكيد التحويل</div>
+            <div class="modal-close">&times;</div>
+        </div>
+        <div class="modal-body">
+            <p>أنت على وشك تحويل <span id="confirm-transfer-amount" class="transaction-amount negative">$0</span> إلى <strong><span id="confirm-transfer-employee">اسم الموظف</span></strong></p>
+            <div class="form-group">
+                <label for="transfer-note">ملاحظة (اختياري)</label>
+                <textarea id="transfer-note" placeholder="أضف ملاحظة لهذه المعاملة"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline modal-close-btn">إلغاء</button>
+            <button class="btn btn-primary" id="confirm-transfer-btn">
+                <i class="fas fa-check-circle"></i> تأكيد التحويل
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="money-action-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title" id="money-action-title">تأكيد العملية</div>
+            <div class="modal-close">&times;</div>
+        </div>
+        <div class="modal-body">
+            <p id="money-action-message">هل أنت متأكد أنك تريد تنفيذ هذه المعاملة؟</p>
+            <div class="form-group">
+                <label for="money-action-note">ملاحظة (اختياري)</label>
+                <textarea id="money-action-note" placeholder="أضف ملاحظة لهذه المعاملة"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline modal-close-btn">إلغاء</button>
+            <button class="btn btn-primary" id="confirm-money-action-btn">
+                <i class="fas fa-check-circle"></i> تأكيد
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="edit-employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title">تعديل الموظف</div>
+            <div class="modal-close">&times;</div>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="edit-name">الاسم الكامل</label>
+                <input type="text" id="edit-name" readonly>
+                <input type="hidden" id="edit-citizenid">
+            </div>
+            <div class="form-group">
+                <label for="edit-rank">الرتبة</label>
+                <select id="edit-rank"></select>
+            </div>
+            <div class="form-group">
+                <label for="edit-note">ملاحظة</label>
+                <textarea id="edit-note" placeholder="ملاحظات عن الموظف"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" id="fire-employee-btn">طرد الموظف</button>
+            <button class="btn btn-outline modal-close-btn">إلغاء</button>
+            <button class="btn btn-primary" id="save-employee-btn">حفظ التغييرات</button>
+        </div>
+    </div>
+</div>
+
+<div class="notification" id="notification">
+    تم حفظ الإعدادات بنجاح!
+</div>
+
+<div id="custom-fire-menu" class="qb-fire-menu-container" style="display: none;">
+    <div class="qb-fire-menu-header">طرد الموظف</div>
+    <div class="qb-fire-menu-message" id="fire-message">
+        هل أنت متأكد أنك تريد طرد هذا الموظف؟
+    </div>
+    <div class="qb-fire-menu-buttons">
+        <div class="qb-fire-menu-button cancel" id="fire-cancel-btn">إلغاء</div>
+        <div class="qb-fire-menu-button confirm" id="fire-confirm-btn">طرد</div>
+    </div>
+</div>
+
+<div class="modal" id="hire-employee-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-user-plus"></i> توظيف موظف جديد</div>
+            <div class="modal-close">&times;</div>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="hire-id">معرّف اللاعب</label>
+                <input type="number" id="hire-id" placeholder="أدخل معرّف اللاعب" min="1">
+            </div>
+            <div class="form-group">
+                <label for="hire-rank">الرتبة</label>
+                <select id="hire-rank"></select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline modal-close-btn">إلغاء</button>
+            <button class="btn btn-primary" id="confirm-hire-btn">
+                <i class="fas fa-check-circle"></i> توظيف الموظف
+            </button>
+        </div>
+    </div>
+</div>
+
+
+    <link rel="stylesheet" href="fire-menu.css">
+    <script src="script.js"></script>
+</body>
+
+</html>
